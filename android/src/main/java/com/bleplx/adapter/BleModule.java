@@ -1420,8 +1420,17 @@ public class BleModule extends ReactContextBaseJavaModule implements BleAdapter 
 
     final SafeExecutor<Characteristic> safeExecutor = new SafeExecutor<>(onSuccessCallback, onErrorCallback);
 
-    final Disposable subscription = connection
-      .writeCharacteristic(characteristic.gattCharacteristic, value)
+    // Use long write builder for writes with response (WRITE_TYPE_DEFAULT)
+    // For writes without response (WRITE_TYPE_NO_RESPONSE), use the simple writeCharacteristic
+    final boolean isWriteWithResponse = characteristic.gattCharacteristic.getWriteType() 
+        == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT;
+    
+    final Disposable subscription = (isWriteWithResponse 
+      ? connection.createNewLongWriteBuilder()
+          .setCharacteristic(characteristic.gattCharacteristic)
+          .setBytes(value)
+          .build()
+      : connection.writeCharacteristic(characteristic.gattCharacteristic, value))
       .doOnDispose(() -> {
         safeExecutor.error(BleErrorUtils.cancelled());
         pendingTransactions.removeSubscription(transactionId);
