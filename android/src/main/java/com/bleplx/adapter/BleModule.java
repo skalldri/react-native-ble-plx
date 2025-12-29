@@ -1421,7 +1421,10 @@ public class BleModule extends ReactContextBaseJavaModule implements BleAdapter 
     final SafeExecutor<Characteristic> safeExecutor = new SafeExecutor<>(onSuccessCallback, onErrorCallback);
 
     final Disposable subscription = connection
-      .writeCharacteristic(characteristic.gattCharacteristic, value)
+      .createNewLongWriteBuilder()
+      .setCharacteristic(characteristic.gattCharacteristic)
+      .setBytes(value)
+      .build()
       .doOnDispose(() -> {
         safeExecutor.error(BleErrorUtils.cancelled());
         pendingTransactions.removeSubscription(transactionId);
