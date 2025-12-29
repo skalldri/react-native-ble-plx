@@ -63,3 +63,8 @@ buck-out/
 /lib
 /test_project
 *.tsbuildinfo
+
+# Gradle wrapper (only needed in example projects, not in library root)
+android/gradle/
+android/gradlew
+android/gradlew.bat
